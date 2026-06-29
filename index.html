@@ -1,218 +1,471 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Swift E-Commerce</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #4f46e5; /* Modern Indigo */
-            --primary-hover: #4338ca;
-            --bg: #f3f4f6;
-            --card-bg: #ffffff;
-            --text-main: #111827;
-            --text-muted: #6b7280;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0A0F1E;
+  --navy2:#111827;
+  --navy3:#1a2235;
+  --cyan:#00D4FF;
+  --cyan2:#00a8cc;
+  --amber:#FFB84D;
+  --slate:#8892A4;
+  --offwhite:#F0EEE9;
+  --white:#FFFFFF;
+  --border:#1e2d45;
+}
+body{
+  background:var(--navy);
+  color:var(--offwhite);
+  font-family:'Space Grotesk',sans-serif;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+.noise{
+  position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  opacity:0.4;
+}
+.grid-bg{
+  position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);
+  background-size:48px 48px;
+  opacity:0.3;
+}
 
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg); margin: 0; color: var(--text-main); }
-        
-        /* --- LOGIN PAGE STYLES --- */
-        #login-page { height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%); }
-        .login-card { background: var(--card-bg); padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 320px; text-align: center; }
-        .login-card h2 { margin-top: 0; font-weight: 800; }
-        .input-group { margin-bottom: 20px; text-align: left; }
-        .input-group label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 5px; color: var(--text-muted); }
-        .input-group input { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; box-sizing: border-box; font-family: 'Inter'; }
-        
-        /* --- STORE PAGE STYLES --- */
-        #store-page { display: none; /* Hidden until logged in */ max-width: 1200px; margin: 0 auto; padding: 20px; }
-        
-        /* Navbar */
-        header { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; border-bottom: 2px solid #e5e7eb; margin-bottom: 30px; }
-        header h1 { margin: 0; font-weight: 800; color: var(--primary); }
-        .user-greeting { font-weight: 600; color: var(--text-muted); background: #e0e7ff; padding: 8px 16px; border-radius: 20px; }
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1rem 2rem;
+  background:rgba(10,15,30,0.85);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+}
+.nav-logo{
+  font-family:'JetBrains Mono',monospace;
+  font-size:14px;color:var(--cyan);
+  letter-spacing:0.05em;
+}
+.nav-logo span{color:var(--slate);}
+.nav-links{display:flex;gap:2rem;}
+.nav-links a{
+  font-size:13px;color:var(--slate);text-decoration:none;
+  letter-spacing:0.06em;text-transform:uppercase;
+  transition:color 0.2s;
+}
+.nav-links a:hover{color:var(--offwhite);}
 
-        /* Store Layout */
-        .layout { display: flex; gap: 30px; align-items: flex-start; }
-        .products { flex: 2; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
-        .cart { flex: 1; min-width: 300px; background: var(--card-bg); padding: 25px; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); position: sticky; top: 20px; }
-        
-        /* Product Cards */
-        .product-card { background: var(--card-bg); padding: 20px; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: transform 0.2s, box-shadow 0.2s; border: 1px solid #f3f4f6; }
-        .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px rgba(0,0,0,0.1); }
-        .product-card h3 { margin: 0 0 5px 0; font-size: 18px; }
-        .product-card p { margin: 0; color: var(--text-muted); font-size: 14px; }
-        .price { font-size: 24px; font-weight: 800; margin: 15px 0; color: var(--primary); }
-        
-        /* Buttons */
-        button { background-color: var(--primary); color: white; border: none; padding: 12px; font-size: 16px; border-radius: 8px; cursor: pointer; font-weight: 600; width: 100%; transition: background 0.2s; font-family: 'Inter'; }
-        button:hover { background-color: var(--primary-hover); }
-        button:disabled { background-color: #9ca3af; cursor: not-allowed; }
-        .btn-success { background-color: #10b981; }
-        .btn-success:hover { background-color: #059669; }
+.container{max-width:960px;margin:0 auto;padding:0 2rem;position:relative;z-index:1;}
 
-        /* Cart Items */
-        .cart-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f3f4f6; font-size: 14px; font-weight: 600;}
-        .cart-total { font-size: 20px; font-weight: 800; margin: 20px 0; display: flex; justify-content: space-between; border-top: 2px solid #e5e7eb; padding-top: 20px;}
-        #receipt { margin-top: 20px; padding: 15px; border-radius: 8px; background: #ecfdf5; color: #065f46; display: none; font-size: 13px; font-weight: 600; line-height: 1.5; border: 1px solid #a7f3d0;}
-    </style>
+/* HERO */
+.hero{
+  min-height:100vh;display:flex;flex-direction:column;justify-content:center;
+  padding:7rem 0 4rem;
+}
+.hero-eyebrow{
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;color:var(--cyan);
+  letter-spacing:0.15em;text-transform:uppercase;
+  margin-bottom:1.5rem;
+  display:flex;align-items:center;gap:0.5rem;
+}
+.hero-eyebrow::before{content:'>';color:var(--cyan);}
+.hero-name{
+  font-size:clamp(2.5rem,6vw,4.5rem);
+  font-weight:700;
+  line-height:1.05;
+  letter-spacing:-0.02em;
+  margin-bottom:0.75rem;
+}
+.hero-name .accent{color:var(--cyan);}
+.hero-title{
+  font-size:clamp(1.1rem,2.5vw,1.5rem);
+  color:var(--slate);
+  font-weight:400;
+  margin-bottom:2rem;
+  display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;
+}
+.typing-wrap{
+  display:inline-flex;align-items:center;gap:0.4rem;
+  background:var(--navy3);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:0.3rem 0.75rem;
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.9rem;
+}
+.typing-text{color:var(--amber);}
+.cursor{
+  display:inline-block;width:2px;height:1em;
+  background:var(--cyan);
+  animation:blink 1s step-end infinite;
+  vertical-align:middle;margin-left:1px;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.hero-desc{
+  font-size:1rem;color:var(--slate);line-height:1.7;
+  max-width:520px;margin-bottom:2.5rem;
+}
+.hero-cta{display:flex;gap:1rem;flex-wrap:wrap;}
+.btn{
+  padding:0.7rem 1.5rem;border-radius:6px;
+  font-family:'Space Grotesk',sans-serif;
+  font-size:14px;font-weight:500;
+  text-decoration:none;cursor:pointer;border:none;
+  letter-spacing:0.04em;transition:all 0.2s;
+}
+.btn-primary{background:var(--cyan);color:var(--navy);font-weight:700;}
+.btn-primary:hover{background:var(--cyan2);transform:translateY(-1px);}
+.btn-ghost{
+  background:transparent;color:var(--offwhite);
+  border:1px solid var(--border);
+}
+.btn-ghost:hover{border-color:var(--slate);background:var(--navy3);}
+
+/* STATS ROW */
+.stats{
+  display:flex;gap:2.5rem;flex-wrap:wrap;
+  padding:2rem 0;
+  border-top:1px solid var(--border);
+  margin-top:3rem;
+}
+.stat-item .num{font-size:1.8rem;font-weight:700;color:var(--offwhite);}
+.stat-item .num span{color:var(--cyan);}
+.stat-item .label{font-size:12px;color:var(--slate);letter-spacing:0.08em;text-transform:uppercase;margin-top:2px;}
+
+/* SECTION */
+section{padding:5rem 0;}
+.section-label{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;color:var(--cyan);
+  letter-spacing:0.18em;text-transform:uppercase;
+  margin-bottom:0.75rem;
+}
+.section-title{
+  font-size:clamp(1.5rem,3vw,2.2rem);font-weight:700;
+  margin-bottom:3rem;letter-spacing:-0.02em;
+}
+
+/* PROJECTS */
+.projects-grid{display:flex;flex-direction:column;gap:1.5rem;}
+.project-card{
+  background:var(--navy2);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:1.75rem 2rem;
+  transition:border-color 0.2s,transform 0.2s;
+  cursor:default;
+}
+.project-card:hover{border-color:var(--cyan);transform:translateX(4px);}
+.project-header{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:1rem;}
+.project-meta{flex:1;}
+.project-num{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;color:var(--slate);
+  letter-spacing:0.1em;margin-bottom:0.4rem;
+}
+.project-name{font-size:1.2rem;font-weight:600;color:var(--offwhite);margin-bottom:0.3rem;}
+.project-tagline{font-size:0.9rem;color:var(--slate);}
+.project-badge{
+  background:rgba(0,212,255,0.08);
+  border:1px solid rgba(0,212,255,0.2);
+  border-radius:5px;
+  padding:0.35rem 0.75rem;
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;color:var(--cyan);
+  white-space:nowrap;
+}
+.project-desc{font-size:0.9rem;color:var(--slate);line-height:1.65;margin-bottom:1.25rem;}
+.project-stack{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.25rem;}
+.tag{
+  background:var(--navy3);border:1px solid var(--border);
+  border-radius:4px;padding:0.25rem 0.6rem;
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;color:var(--slate);
+}
+.project-links{display:flex;gap:0.75rem;}
+.project-link{
+  font-size:12px;color:var(--slate);text-decoration:none;
+  display:flex;align-items:center;gap:0.3rem;
+  transition:color 0.2s;letter-spacing:0.06em;
+  border:1px solid var(--border);border-radius:4px;padding:0.3rem 0.7rem;
+}
+.project-link:hover{color:var(--cyan);border-color:var(--cyan);}
+
+/* SKILLS */
+.skills-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;
+}
+.skill-group{
+  background:var(--navy2);border:1px solid var(--border);border-radius:10px;
+  padding:1.25rem 1.5rem;
+}
+.skill-group-title{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;color:var(--cyan);
+  letter-spacing:0.12em;text-transform:uppercase;
+  margin-bottom:0.75rem;
+}
+.skill-list{display:flex;flex-wrap:wrap;gap:0.4rem;}
+.skill-chip{
+  font-size:12px;color:var(--slate);
+  background:var(--navy3);border:1px solid var(--border);
+  border-radius:4px;padding:0.2rem 0.5rem;
+}
+
+/* CONTACT */
+.contact-box{
+  background:var(--navy2);border:1px solid var(--border);
+  border-radius:12px;padding:2.5rem;
+  display:flex;flex-direction:column;align-items:flex-start;gap:1.5rem;
+}
+.contact-box h3{font-size:1.5rem;font-weight:700;color:var(--offwhite);}
+.contact-box p{font-size:0.95rem;color:var(--slate);line-height:1.65;max-width:480px;}
+.contact-links{display:flex;gap:1rem;flex-wrap:wrap;}
+.contact-link{
+  display:flex;align-items:center;gap:0.5rem;
+  font-size:13px;color:var(--slate);text-decoration:none;
+  border:1px solid var(--border);border-radius:6px;padding:0.5rem 1rem;
+  transition:all 0.2s;font-family:'JetBrains Mono',monospace;
+  letter-spacing:0.04em;
+}
+.contact-link:hover{color:var(--cyan);border-color:var(--cyan);background:rgba(0,212,255,0.05);}
+.contact-link .dot{width:6px;height:6px;border-radius:50%;background:var(--cyan);}
+
+footer{
+  border-top:1px solid var(--border);padding:2rem 0;
+  text-align:center;
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;color:var(--slate);letter-spacing:0.08em;
+}
+</style>
 </head>
 <body>
+<div class="noise"></div>
+<div class="grid-bg"></div>
 
-    <div id="login-page">
-        <div class="login-card">
-            <h2>Welcome to Swift</h2>
-            <p style="color: #6b7280; margin-bottom: 25px; font-size: 14px;">Sign in to access the store</p>
-            
-            <div class="input-group">
-                <label>User ID (e.g., jayanth_123)</label>
-                <input type="text" id="username" placeholder="Enter your ID" autocomplete="off">
-            </div>
-            <div class="input-group">
-                <label>Password</label>
-                <input type="password" id="password" placeholder="••••••••">
-            </div>
-            
-            <button onclick="handleLogin()">Sign In</button>
-        </div>
+<!-- NAVIGATION -->
+<nav>
+  <div class="nav-logo">KJR<span>@dev</span>:~$</div>
+  <div class="nav-links">
+    <a href="#projects">projects</a>
+    <a href="#skills">skills</a>
+    <a href="#contact">contact</a>
+  </div>
+</nav>
+
+<div class="container">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-eyebrow">available for hire · Bengaluru, IN</div>
+    <h1 class="hero-name">Kalahasthi<br><span class="accent">Jayanth Reddy</span></h1>
+    <div class="hero-title">
+      Frontend Developer ·
+      <div class="typing-wrap">
+        <span class="typing-text" id="typed"></span><span class="cursor"></span>
+      </div>
     </div>
-
-    <div id="store-page">
-        <header>
-            <h1>Swift Store</h1>
-            <div class="user-greeting">👤 Hello, <span id="display-name">User</span></div>
-        </header>
-
-        <div class="layout">
-            <div class="products">
-                <div class="product-card">
-                    <h3>MacBook Pro M3</h3>
-                    <p>18GB Memory, 512GB SSD</p>
-                    <div class="price">$2500</div>
-                    <button onclick="addToCart('prod_macbook', 'MacBook Pro M3', 2500)">Add to Cart</button>
-                </div>
-                <div class="product-card">
-                    <h3>Samsung Galaxy Book 4</h3>
-                    <p>16GB Memory, 1TB SSD</p>
-                    <div class="price">$1800</div>
-                    <button onclick="addToCart('prod_samsung', 'Galaxy Book 4', 1800)">Add to Cart</button>
-                </div>
-                <div class="product-card">
-                    <h3>Sony WH-1000XM5</h3>
-                    <p>Noise Cancelling Headphones</p>
-                    <div class="price">$350</div>
-                    <button onclick="addToCart('prod_sony', 'Sony Headphones', 350)">Add to Cart</button>
-                </div>
-                <div class="product-card">
-                    <h3>Keychron K2</h3>
-                    <p>Wireless Mechanical Keyboard</p>
-                    <div class="price">$100</div>
-                    <button onclick="addToCart('prod_keychron', 'Keychron K2', 100)">Add to Cart</button>
-                </div>
-            </div>
-
-            <div class="cart">
-                <h2 style="margin-top: 0; font-weight: 800;">Your Cart 🛒</h2>
-                <div id="cart-items">
-                    <p style="color: #9ca3af; font-size: 14px;">Your cart is empty.</p>
-                </div>
-                <div class="cart-total">
-                    <span>Total:</span>
-                    <span id="total-price">$0</span>
-                </div>
-                <button id="checkout-btn" onclick="submitOrder()" disabled>Checkout Securely</button>
-                <div id="receipt"></div>
-            </div>
-        </div>
+    <p class="hero-desc">
+      I build fast, interactive web apps — from real-time collaborative tools to AI-powered chat. 
+      Comfortable across the full stack, obsessed with clean UI.
+    </p>
+    <div class="hero-cta">
+      <a href="#projects" class="btn btn-primary">View projects</a>
+      <a href="#contact" class="btn btn-ghost">Get in touch</a>
     </div>
+    <div class="stats">
+      <div class="stat-item"><div class="num">3<span>+</span></div><div class="label">Live projects</div></div>
+      <div class="stat-item"><div class="num">8<span>+</span></div><div class="label">Technologies</div></div>
+      <div class="stat-item"><div class="num"><span>∞</span></div><div class="label">Cups of chai</div></div>
+    </div>
+  </section>
 
-    <script>
-        let currentUser = "";
-        let cart = [];
-        let totalAmount = 0;
+  <!-- PROJECTS -->
+  <section id="projects">
+    <div class="section-label">// selected work</div>
+    <h2 class="section-title">Projects</h2>
+    <div class="projects-grid">
 
-        // --- 1. Login Logic ---
-        function handleLogin() {
-            const usernameInput = document.getElementById('username').value;
-            const passwordInput = document.getElementById('password').value;
+      <!-- PROJECT 01 -->
+      <div class="project-card">
+        <div class="project-header">
+          <div class="project-meta">
+            <div class="project-num">01 —</div>
+            <div class="project-name">Real-Time Collaborative Task Manager</div>
+            <div class="project-tagline">Like Trello, but you built it</div>
+          </div>
+          <div class="project-badge">WebSockets</div>
+        </div>
+        <p class="project-desc">
+          Drag-and-drop Kanban boards with live state sync across browser tabs. 
+          Multiple users can assign tasks, move cards, and see updates instantly — 
+          no refresh. Built REST API with JWT auth, persistent SQLite storage, and Socket.io rooms.
+        </p>
+        <div class="project-stack">
+          <span class="tag">React</span><span class="tag">Node.js</span>
+          <span class="tag">Socket.io</span><span class="tag">SQLite</span>
+          <span class="tag">REST API</span><span class="tag">JWT</span>
+        </div>
+        <div class="project-links">
+          <a class="project-link" href="#" target="_blank" rel="noopener noreferrer">↗ Live demo</a>
+          <a class="project-link" href="https://github.com/Jayanthoo7/collab-task-manager" target="_blank" rel="noopener noreferrer">⎇ GitHub</a>
+        </div>
+      </div>
 
-            if (usernameInput.trim() === "" || passwordInput.trim() === "") {
-                alert("Please enter both a User ID and Password.");
-                return;
-            }
+      <!-- PROJECT 02 -->
+      <div class="project-card">
+        <div class="project-header">
+          <div class="project-meta">
+            <div class="project-num">02 —</div>
+            <div class="project-name">AI-Powered Chat App</div>
+            <div class="project-tagline">Claude API with streaming responses</div>
+          </div>
+          <div class="project-badge">AI / LLM</div>
+        </div>
+        <p class="project-desc">
+          Full-featured chat interface built on the Anthropic API with token streaming, 
+          multi-session memory, markdown rendering, and model switching. 
+          Demonstrates real product patterns every company is building right now.
+        </p>
+        <div class="project-stack">
+          <span class="tag">React</span><span class="tag">Node.js</span>
+          <span class="tag">Anthropic API</span><span class="tag">Streaming</span>
+          <span class="tag">Markdown</span>
+        </div>
+        <div class="project-links">
+          <a class="project-link" href="#" target="_blank" rel="noopener noreferrer">↗ Live demo</a>
+          <a class="project-link" href="https://github.com/Jayanthoo7/ai-chat-app" target="_blank" rel="noopener noreferrer">⎇ GitHub</a>
+        </div>
+      </div>
 
-            // Save the user and switch screens
-            currentUser = usernameInput;
-            document.getElementById('display-name').innerText = currentUser;
-            
-            document.getElementById('login-page').style.display = "none";
-            document.getElementById('store-page').style.display = "block";
-        }
+      <!-- PROJECT 03 -->
+      <div class="project-card">
+        <div class="project-header">
+          <div class="project-meta">
+            <div class="project-num">03 —</div>
+            <div class="project-name">Chess — Multiplayer + AI</div>
+            <div class="project-tagline">Full-stack game platform</div>
+          </div>
+          <div class="project-badge">Full-stack</div>
+        </div>
+        <p class="project-desc">
+          Browser chess with real-time multiplayer via WebSockets, a playable AI opponent, 
+          move history, and game replay. Handles complex game state transitions, 
+          check/checkmate validation, and responsive board rendering.
+        </p>
+        <div class="project-stack">
+          <span class="tag">React</span><span class="tag">Node.js</span>
+          <span class="tag">Socket.io</span><span class="tag">Game logic</span>
+          <span class="tag">Python</span><span class="tag">FastAPI</span>
+        </div>
+        <div class="project-links">
+          <a class="project-link" href="#" target="_blank" rel="noopener noreferrer">↗ Live demo</a>
+          <a class="project-link" href="https://github.com/Jayanthoo7/chess-app" target="_blank" rel="noopener noreferrer">⎇ GitHub</a>
+        </div>
+      </div>
 
-        // --- 2. Cart Logic ---
-        function addToCart(productId, name, price) {
-            cart.push({ productId: productId, name: name, price: price, quantity: 1 });
-            totalAmount += price;
-            updateCartUI();
-        }
+    </div>
+  </section>
 
-        function updateCartUI() {
-            const cartDiv = document.getElementById('cart-items');
-            if (cart.length === 0) return;
+  <!-- SKILLS -->
+  <section id="skills">
+    <div class="section-label">// technical skills</div>
+    <h2 class="section-title">Stack</h2>
+    <div class="skills-grid">
+      <div class="skill-group">
+        <div class="skill-group-title">Frontend</div>
+        <div class="skill-list">
+          <span class="skill-chip">React</span>
+          <span class="skill-chip">JavaScript</span>
+          <span class="skill-chip">HTML/CSS</span>
+          <span class="skill-chip">Socket.io client</span>
+        </div>
+      </div>
+      <div class="skill-group">
+        <div class="skill-group-title">Backend</div>
+        <div class="skill-list">
+          <span class="skill-chip">Node.js</span>
+          <span class="skill-chip">Express</span>
+          <span class="skill-chip">Python</span>
+          <span class="skill-chip">FastAPI</span>
+          <span class="skill-chip">REST APIs</span>
+        </div>
+      </div>
+      <div class="skill-group">
+        <div class="skill-group-title">Real-time / DB</div>
+        <div class="skill-list">
+          <span class="skill-chip">Socket.io</span>
+          <span class="skill-chip">WebSockets</span>
+          <span class="skill-chip">SQLite</span>
+          <span class="skill-chip">SQL</span>
+        </div>
+      </div>
+      <div class="skill-group">
+        <div class="skill-group-title">Testing / Infra</div>
+        <div class="skill-list">
+          <span class="skill-chip">Selenium</span>
+          <span class="skill-chip">Playwright</span>
+          <span class="skill-chip">Java</span>
+          <span class="skill-chip">Git</span>
+          <span class="skill-chip">Linux</span>
+        </div>
+      </div>
+    </div>
+  </section>
 
-            cartDiv.innerHTML = ""; 
-            cart.forEach(item => {
-                cartDiv.innerHTML += `<div class="cart-item"><span>${item.name}</span><span>$${item.price}</span></div>`;
-            });
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="section-label">// get in touch</div>
+    <h2 class="section-title">Contact</h2>
+    <div class="contact-box">
+      <h3>Open to frontend roles in Bengaluru</h3>
+      <p>
+        I'm actively looking for Software Developer, Frontend Developer, and QA Automation roles. 
+        If you're building something interesting, let's talk.
+      </p>
+      <div class="contact-links">
+        <a class="contact-link" href="https://github.com/Jayanthoo7" target="_blank" rel="noopener noreferrer"><span class="dot"></span>github.com/Jayanthoo7</a>
+        <a class="contact-link" href="https://www.linkedin.com/in/kalahasthi-jayanth-reddy-ab4984271/" target="_blank" rel="noopener noreferrer"><span class="dot"></span>linkedin.com/in/kalahasthi-jayanth-reddy-ab4984271</a>
+        <a class="contact-link" href="mailto:kjayathreddy00@gmail.com"><span class="dot"></span>kjayathreddy00@gmail.com</a>
+      </div>
+    </div>
+  </section>
 
-            document.getElementById('total-price').innerText = `$${totalAmount}`;
-            document.getElementById('checkout-btn').disabled = false;
-        }
+</div>
 
-        // --- 3. Java Backend Connection ---
-        async function submitOrder() {
-            const checkoutBtn = document.getElementById('checkout-btn');
-            const receiptDiv = document.getElementById('receipt');
-            
-            checkoutBtn.innerText = "Processing Engine...";
-            checkoutBtn.disabled = true;
+<footer><div class="container">built by Jayanth Reddy · Bengaluru · 2026</div></footer>
 
-            // Notice we are sending the dynamically captured 'currentUser' to Java!
-            const orderPayload = {
-                userId: currentUser, 
-                totalAmount: totalAmount,
-                items: cart
-            };
+<script>
+const stack = ['React','Node.js','Socket.io','Python','Playwright','FastAPI','SQLite','JavaScript'];
+let si=0,ci=0,del=false;
+const el=document.getElementById('typed');
+function type(){
+  const word=stack[si];
+  if(!del){
+    el.textContent=word.slice(0,ci+1);
+    ci++;
+    if(ci===word.length){del=true;setTimeout(type,1800);return;}
+  } else {
+    el.textContent=word.slice(0,ci-1);
+    ci--;
+    if(ci===0){del=false;si=(si+1)%stack.length;}
+  }
+  setTimeout(type,del?60:90);
+}
+type();
 
-            try {
-                const response = await fetch('http://localhost:8080/api/checkout/process', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(orderPayload)
-                });
-
-                const result = await response.json();
-
-                receiptDiv.style.display = "block";
-                receiptDiv.innerHTML = `✅ <b>Payment Verified by Java Engine</b><br><br><b>Buyer ID:</b> ${result.userId}<br><b>MongoDB ID:</b> ${result.id}<br><b>Status:</b> ${result.status}`;
-                
-                checkoutBtn.innerText = "Success";
-                checkoutBtn.classList.add("btn-success");
-                
-                cart = []; 
-                totalAmount = 0;
-                
-            } catch (error) {
-                receiptDiv.style.display = "block";
-                receiptDiv.style.background = "#fee2e2";
-                receiptDiv.style.color = "#991b1b";
-                receiptDiv.style.border = "1px solid #f87171";
-                receiptDiv.innerHTML = "❌ Connection failed. Is the Spring Boot server running?";
-                checkoutBtn.innerText = "Try Again";
-                checkoutBtn.disabled = false;
-            }
-        }
-    </script>
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click',e=>{
+    const t=document.querySelector(a.getAttribute('href'));
+    if(t){e.preventDefault();t.scrollIntoView({behavior:'smooth'});}
+  });
+});
+</script>
 </body>
 </html>
